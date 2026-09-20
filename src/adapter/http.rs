@@ -134,7 +134,7 @@ fn wallet_error_status(error: WalletError) -> StatusCode {
         WalletError::InvalidOwner | WalletError::InvalidBalance => StatusCode::BAD_REQUEST,
         WalletError::NotFound => StatusCode::NOT_FOUND,
         WalletError::Repository(error) => {
-            eprintln!("repository error: {error}");
+            log::error!("wallet repository error: {error}");
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }
@@ -187,7 +187,7 @@ fn transfer_error_status(error: TransferError) -> StatusCode {
             StatusCode::CONFLICT
         }
         TransferError::Repository(error) => {
-            eprintln!("repository error: {error}");
+            log::error!("transfer repository error: {error}");
             StatusCode::INTERNAL_SERVER_ERROR
         }
     }

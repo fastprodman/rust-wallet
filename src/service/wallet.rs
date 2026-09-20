@@ -42,10 +42,15 @@ impl WalletService {
             return Err(WalletError::InvalidBalance);
         }
 
-        self.repository
+        let wallet = self
+            .repository
             .create(command.owner, command.balance)
             .await
-            .map_err(WalletError::from)
+            .map_err(WalletError::from)?;
+
+        log::info!("wallet created: wallet_id={}", wallet.id);
+
+        Ok(wallet)
     }
 
     pub async fn get(&self, id: i64) -> Result<Wallet, WalletError> {

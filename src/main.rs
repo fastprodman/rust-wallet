@@ -14,12 +14,20 @@ use sqlx::postgres::PgPoolOptions;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
+
+    log::info!("starting wallet API");
+
     let database_url = std::env::var("DATABASE_URL")?;
+
+    log::info!("connecting to database");
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
         .connect(&database_url)
         .await?;
+
+    log::info!("database connection established");
 
     let wallet_repository = Arc::new(PostgresWalletRepository::new(pool.clone()));
     let wallet_service = Arc::new(WalletService::new(wallet_repository));
@@ -35,13 +43,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let local_address = listener.local_addr()?;
 
-    println!("server listening on http://{local_address}");
+    log::info!("server listening on http://{local_address}");
 
     let server_result = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
         .await;
 
+    log::info!("HTTP server stopped; closing database pool");
     pool.close().await;
+    log::info!("database pool closed");
+
     server_result?;
 
     Ok(())
@@ -70,5 +81,5 @@ async fn shutdown_signal() {
         _ = terminate => {},
     }
 
-    eprintln!("shutdown signal received");
+    log::info!("shutdown signal received");
 }

@@ -107,6 +107,7 @@ impl TransferService {
                 }
 
                 transaction.commit().await?;
+                log::info!("idempotent transfer returned: transfer_id={}", existing.id);
                 return Ok(TransferOutcome::Existing(existing));
             }
         };
@@ -129,6 +130,14 @@ impl TransferService {
             .await?;
 
         transaction.commit().await?;
+
+        log::info!(
+            "transfer completed: transfer_id={}, from_wallet_id={}, to_wallet_id={}, amount={}",
+            transfer.id,
+            transfer.from_wallet_id,
+            transfer.to_wallet_id,
+            transfer.amount
+        );
 
         Ok(TransferOutcome::Created(transfer))
     }

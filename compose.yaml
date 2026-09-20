@@ -36,6 +36,7 @@ services:
     environment:
       DATABASE_URL: postgres://wallet:wallet@postgres:5432/wallet?sslmode=disable
       BIND_ADDRESS: 0.0.0.0:3000
+      RUST_LOG: ${RUST_LOG:-info}
     ports:
       - "3000:3000"
     depends_on:

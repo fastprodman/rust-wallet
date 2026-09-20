@@ -219,3 +219,31 @@ docker compose logs api
 ```
 
 The API stops accepting new connections, allows active requests to finish, and has a 30-second grace period before Docker forces termination.
+
+## Logging
+
+The application writes lifecycle events, successful wallet and transfer operations, and repository failures to standard error. Docker collects these logs automatically:
+
+```bash
+docker compose logs --follow api
+```
+
+The default log level is `info`. Override it with `RUST_LOG` when running locally:
+
+```bash
+RUST_LOG=debug cargo run
+```
+
+Or override the Compose value:
+
+```bash
+RUST_LOG=debug docker compose up
+```
+
+Database URLs, request bodies, wallet owners, and raw idempotency keys are not logged.
+
+## Possible improvements
+
+- Add HTTP metrics for request counts, response status codes, latency, transfer outcomes, and database pool usage, with a Prometheus-compatible endpoint.
+- Add HTTP trace middleware with request IDs so logs from one request can be correlated across handlers, services, and repository operations.
+- Export distributed traces with OpenTelemetry when the application begins calling other services.
