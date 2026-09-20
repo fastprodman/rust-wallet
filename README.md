@@ -20,15 +20,6 @@ Balances are stored as integers. The application does not use floating-point val
 
 ## Architecture
 
-```text
-HTTP adapter ──▶ application services ──▶ repository ports ◀── PostgreSQL adapter
-                            │
-                            ▼
-                          domain
-
-main.rs constructs the adapters and services and starts the server.
-```
-
 The HTTP adapter translates JSON and status codes. Services make application decisions. Ports describe the persistence operations required by the services, and the PostgreSQL adapter provides their SQLx implementations.
 
 ## Requirements
