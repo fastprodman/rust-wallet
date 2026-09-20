@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let wallet_repository = Arc::new(PostgresWalletRepository::new(pool.clone()));
     let wallet_service = Arc::new(WalletService::new(wallet_repository));
-    let transfer_repository = Arc::new(PostgresTransferRepository::new(pool));
+    let transfer_repository = Arc::new(PostgresTransferRepository::new(pool.clone()));
     let transfer_service = Arc::new(TransferService::new(transfer_repository));
 
     let app = http::router(wallet_service, transfer_service);
@@ -37,9 +37,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("server listening on http://{local_address}");
 
-    axum::serve(listener, app)
+    let server_result = axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())
-        .await?;
+        .await;
+
+    pool.close().await;
+    server_result?;
 
     Ok(())
 }
