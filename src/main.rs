@@ -1,94 +1,36 @@
-use std::{
-    collections::HashMap,
-    sync::{
-        Arc,
-        atomic::{AtomicI64, Ordering},
-    },
+mod adapter;
+mod domain;
+mod port;
+mod service;
+
+use std::sync::Arc;
+
+use adapter::{
+    http,
+    postgres::{PostgresTransferRepository, PostgresWalletRepository},
 };
-
-use axum::{
-    Json, Router,
-    extract::{Path, State},
-    http::StatusCode,
-    routing::{get, post},
-};
-use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
-
-#[derive(Clone)]
-struct AppState {
-    wallets: Arc<RwLock<HashMap<i64, Wallet>>>,
-    next_id: Arc<AtomicI64>,
-}
-
-#[derive(Clone, Serialize)]
-struct Wallet {
-    id: i64,
-    owner: String,
-    balance: i64,
-}
-
-#[derive(Deserialize)]
-struct CreateWalletRequest {
-    owner: String,
-    balance: i64,
-}
-
-async fn health() -> &'static str {
-    "ok"
-}
-
-async fn create_wallet(
-    State(state): State<AppState>,
-    Json(request): Json<CreateWalletRequest>,
-) -> Result<(StatusCode, Json<Wallet>), StatusCode> {
-    let owner = request.owner.to_owned();
-
-    if owner.is_empty() || request.balance < 0 {
-        return Err(StatusCode::BAD_REQUEST);
-    };
-
-    let id = state.next_id.fetch_add(1, Ordering::Relaxed);
-
-    let wallet = Wallet {
-        id,
-        owner,
-        balance: request.balance,
-    };
-
-    let mut wallet_storage = state.wallets.write().await;
-    wallet_storage.insert(id, wallet.clone());
-
-    Ok((StatusCode::OK, Json(wallet)))
-}
-
-async fn get_wallet(
-    State(state): State<AppState>,
-    Path(id): Path<i64>,
-) -> Result<Json<Wallet>, StatusCode> {
-    let wattet_storage = state.wallets.read().await;
-
-    let Some(wallet) = wattet_storage.get(&id).cloned() else {
-        return Err(StatusCode::NOT_FOUND);
-    };
-
-    Ok(Json(wallet))
-}
+use service::{TransferService, WalletService};
+use sqlx::postgres::PgPoolOptions;
 
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
-    let state = AppState {
-        wallets: Arc::new(RwLock::new(HashMap::new())),
-        next_id: Arc::new(AtomicI64::new(1)),
-    };
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let database_url = std::env::var("DATABASE_URL")?;
 
-    let app = Router::new()
-        .route("/health", get(health))
-        .route("/wallets", post(create_wallet))
-        .route("/wallets/{id}", get(get_wallet))
-        .with_state(state);
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&database_url)
+        .await?;
+
+    let wallet_repository = Arc::new(PostgresWalletRepository::new(pool.clone()));
+    let wallet_service = Arc::new(WalletService::new(wallet_repository));
+    let transfer_repository = Arc::new(PostgresTransferRepository::new(pool));
+    let transfer_service = Arc::new(TransferService::new(transfer_repository));
+
+    let app = http::router(wallet_service, transfer_service);
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
 
-    axum::serve(listener, app).await
+    axum::serve(listener, app).await?;
+
+    Ok(())
 }

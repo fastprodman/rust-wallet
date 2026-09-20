@@ -1,0 +1,88 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n        SELECT\n            id,\n            from_wallet_id,\n            to_wallet_id,\n            amount,\n            idempotency_key,\n            status\n        FROM transfers\n        WHERE id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "id"
+          }
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "from_wallet_id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "from_wallet_id"
+          }
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "to_wallet_id",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "to_wallet_id"
+          }
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "amount",
+        "type_info": "Int8",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "amount"
+          }
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "idempotency_key",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "idempotency_key"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "status",
+        "type_info": "Text",
+        "origin": {
+          "Table": {
+            "table": "transfers",
+            "name": "status"
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int8"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "45a6f23ec8581ee7affa17df221f43d1d460d8b30594a2cbd95bf9465a627ce0"
+}

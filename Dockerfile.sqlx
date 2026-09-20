@@ -1,0 +1,21 @@
+FROM rust:1.97-alpine AS builder
+
+RUN apk add --no-cache build-base perl
+
+ARG SQLX_CLI_VERSION=0.9.0
+
+RUN cargo install sqlx-cli \
+    --version "${SQLX_CLI_VERSION}" \
+    --locked \
+    --no-default-features \
+    --features rustls,postgres
+
+FROM alpine
+
+RUN apk add --no-cache ca-certificates
+
+COPY --from=builder /usr/local/cargo/bin/sqlx /usr/local/bin/sqlx
+
+WORKDIR /app
+
+ENTRYPOINT ["sqlx"]
