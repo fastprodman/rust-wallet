@@ -28,9 +28,44 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = http::router(wallet_service, transfer_service);
 
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+    let bind_address =
+        std::env::var("BIND_ADDRESS").unwrap_or_else(|_| "127.0.0.1:3000".to_owned());
 
-    axum::serve(listener, app).await?;
+    let listener = tokio::net::TcpListener::bind(bind_address).await?;
+
+    let local_address = listener.local_addr()?;
+
+    println!("server listening on http://{local_address}");
+
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install SIGTERM handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    eprintln!("shutdown signal received");
 }

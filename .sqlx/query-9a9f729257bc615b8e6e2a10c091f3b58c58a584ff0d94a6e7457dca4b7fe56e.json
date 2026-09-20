@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        INSERT INTO transfers (\n            from_wallet_id,\n            to_wallet_id,\n            amount,\n            idempotency_key,\n            status\n        )\n        VALUES ($1, $2, $3, $4, 'completed')\n        ON CONFLICT (idempotency_key) DO NOTHING\n        RETURNING\n            id,\n            from_wallet_id,\n            to_wallet_id,\n            amount,\n            idempotency_key,\n            status\n        ",
+  "query": "\n            INSERT INTO transfers (\n                from_wallet_id,\n                to_wallet_id,\n                amount,\n                idempotency_key,\n                status\n            )\n            VALUES ($1, $2, $3, $4, 'completed')\n            ON CONFLICT (idempotency_key) DO NOTHING\n            RETURNING\n                id,\n                from_wallet_id,\n                to_wallet_id,\n                amount,\n                idempotency_key,\n                status\n            ",
   "describe": {
     "columns": [
       {
@@ -87,5 +87,5 @@
       false
     ]
   },
-  "hash": "21797117fd9d46c34fd8970d0e2e0b507411bf9522cd23b93ca348adf5536080"
+  "hash": "9a9f729257bc615b8e6e2a10c091f3b58c58a584ff0d94a6e7457dca4b7fe56e"
 }

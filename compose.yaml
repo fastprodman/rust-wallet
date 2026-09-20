@@ -29,5 +29,20 @@ services:
     command: ["migrate", "run"]
     restart: "no"
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://wallet:wallet@postgres:5432/wallet?sslmode=disable
+      BIND_ADDRESS: 0.0.0.0:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    stop_grace_period: 30s
+
 volumes:
   wallet_postgres_data:

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT\n            id,\n            from_wallet_id,\n            to_wallet_id,\n            amount,\n            idempotency_key,\n            status\n        FROM transfers\n        WHERE id = $1\n        ",
+  "query": "\n            SELECT\n                id,\n                from_wallet_id,\n                to_wallet_id,\n                amount,\n                idempotency_key,\n                status\n            FROM transfers\n            WHERE idempotency_key = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -72,7 +72,7 @@
     ],
     "parameters": {
       "Left": [
-        "Int8"
+        "Text"
       ]
     },
     "nullable": [
@@ -84,5 +84,5 @@
       false
     ]
   },
-  "hash": "45a6f23ec8581ee7affa17df221f43d1d460d8b30594a2cbd95bf9465a627ce0"
+  "hash": "769de33766f67c93ee66d209366af479240795db74e2ce4c470589250f0d383e"
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n        SELECT id, balance\n        FROM wallets\n        WHERE id IN ($1, $2)\n        ORDER BY id\n        FOR UPDATE\n        ",
+  "query": "\n            SELECT id, balance\n            FROM wallets\n            WHERE id IN ($1, $2)\n            ORDER BY id\n            FOR UPDATE\n            ",
   "describe": {
     "columns": [
       {
@@ -37,5 +37,5 @@
       false
     ]
   },
-  "hash": "26d70cddfaa6ce210d20a43982036bb00ef353ea3aadde368b69c32c5ee50854"
+  "hash": "b7be3d96915b374b1050bb31ad61497409f0035270d9d1ca1ffc64b671717c39"
 }
